@@ -168,29 +168,30 @@ if uploaded_file is not None:
         int_vars = [col for col in int_vars if col != target_variable]
 
         # Create a figure with subplots
-       num_cols = len(int_vars)
-       num_rows = (num_cols + 2) // 3  # To make sure there are enough rows for the subplots
-       fig, axs = plt.subplots(nrows=num_rows, ncols=3, figsize=(15, 5*num_rows))
-       axs = axs.flatten()
+        num_cols = len(int_vars)
+        num_rows = (num_cols + 2) // 3  # To make sure there are enough rows for the subplots
+        fig, axs = plt.subplots(nrows=num_rows, ncols=3, figsize=(15, 5*num_rows))
+        axs = axs.flatten()
+        
+        # Create a histogram for each integer variable with hue='Attrition'
+        for i, var in enumerate(int_vars):
+            top_categories = df[var].value_counts().nlargest(10).index
+            filtered_df = df[df[var].notnull() & df[var].isin(top_categories)]
+            sns.histplot(data=df, x=var, hue=target_variable, kde=True, ax=axs[i])
+            axs[i].set_title(var)
+        
+        # Remove any extra empty subplots if needed
+        if num_cols < len(axs):
+            for i in range(num_cols, len(axs)):
+                fig.delaxes(axs[i])
+        
+        # Adjust spacing between subplots
+        fig.tight_layout()
+        
+        # Show plot
+        st.pyplot(fig)
+        fig.savefig("plot3.png")
 
-       # Create a histogram for each integer variable with hue='Attrition'
-       for i, var in enumerate(int_vars):
-           top_categories = df[var].value_counts().nlargest(10).index
-           filtered_df = df[df[var].notnull() & df[var].isin(top_categories)]
-           sns.histplot(data=df, x=var, hue=target_variable, kde=True, ax=axs[i])
-           axs[i].set_title(var)
-
-       # Remove any extra empty subplots if needed
-       if num_cols < len(axs):
-           for i in range(num_cols, len(axs)):
-               fig.delaxes(axs[i])
-
-       # Adjust spacing between subplots
-       fig.tight_layout()
-
-       # Show plot
-       st.pyplot(fig)
-       fig.savefig("plot3.png")
 
    # Define the paths to the saved plots
    plot_paths = ["plot4.png", "plot7.png", "plot2.png", "plot3.png"]

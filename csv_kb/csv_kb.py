@@ -13,6 +13,8 @@ import pathlib
 import textwrap
 import google.generativeai as genai
 import os
+from IPython.display import display
+from IPython.display import Markdown
 
 
 # api_key = os.environ.get("API_KEY")
@@ -258,9 +260,8 @@ if uploaded_file is not None:
         text = text.replace('•', '  *')
         return Markdown(textwrap.indent(text, '> ', predicate=lambda _: True))
     
-    # Ensure genai.configure() is called without any arguments
-    # genai.configure()
-    genai.configure(api_key="AIzaSyB0wMSPOwRrjmiLurUDvR1tp3EQynC_LDk")
+# Ensure genai.configure() is called without any arguments
+genai.configure(api_key=os.getenv('API_KEY'))
     
     import PIL.Image
     

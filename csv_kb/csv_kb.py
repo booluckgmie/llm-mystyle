@@ -24,16 +24,20 @@ st.write("they never lied, with Google Generative AI")
 # Upload the CSV file
 uploaded_file = st.file_uploader("Upload CSV file:")
 
+# Calculate the number of rows for subplots
+def calculate_num_rows(num_cols):
+    if num_cols == 0:
+        return 1  # At least one row needed for plotting
+    return (num_cols + 2) // 3  # To make sure there are enough rows for the subplots
+    
 # Check if the file is uploaded
 if uploaded_file is not None:
     # Read the CSV file into a Pandas DataFrame
     df = pd.read_csv(uploaded_file, low_memory=False, encoding='latin-1')
-        
+
     # Show the original DataFrame
     st.write("Original DataFrame:")
     st.dataframe(df)
-
-
 
     st.write("**Countplot Barchart**")
 
@@ -42,7 +46,7 @@ if uploaded_file is not None:
 
     # Create a figure with subplots
     num_cols = len(cat_vars)
-    num_rows = (num_cols + 2) // 3
+    num_rows = calculate_num_rows(num_cols)
     fig, axs = plt.subplots(nrows=num_rows, ncols=3, figsize=(15, 5*num_rows))
     axs = axs.flatten()
 

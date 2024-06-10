@@ -17,7 +17,7 @@ import os
 api_key = os.environ.get("API_KEY")
 
 st.title("Make your data talk")
-st.subtitle("- they never lied, with Google Gemini")
+st.write("- they never lied, with Google Gemini")
     
 # Upload the CSV file
 uploaded_file = st.file_uploader("Upload CSV file:")

@@ -4,6 +4,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import google.generativeai as genai
 import PIL.Image
+import os
 
 sns.set_theme(color_codes=True)
 

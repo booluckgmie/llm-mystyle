@@ -13,6 +13,7 @@ import pathlib
 import textwrap
 import google.generativeai as genai
 import os
+from streamlit.markup import Markdown  # Import Markdown from streamlit.markup
 
 api_key = os.environ.get("API_KEY")
 
@@ -33,7 +34,7 @@ def calculate_num_rows(num_cols):
 # Function to convert text to Markdown with indentation
 def to_markdown(text):
     text = text.replace('•', '  *')
-    return st.Markdown(textwrap.indent(text, '> ', predicate=lambda _: True))  # Use st.Markdown to create Markdown content
+    return Markdown(textwrap.indent(text, '> ', predicate=lambda _: True))  # Use Markdown from streamlit.markup to create Markdown content
 
 # Check if the file is uploaded
 if uploaded_file is not None:
@@ -75,7 +76,6 @@ if uploaded_file is not None:
     # Show plots using Streamlit
     st.pyplot(fig)
     fig.savefig("plot4.png")
-
         
 
     st.write("**Histoplot**")

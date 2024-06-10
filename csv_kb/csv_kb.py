@@ -254,7 +254,8 @@ if uploaded_file is not None:
         return Markdown(textwrap.indent(text, '> ', predicate=lambda _: True))
     
     # Ensure genai.configure() is called without any arguments
-    genai.configure()
+    # genai.configure()
+    genai.configure(api_key="AIzaSyB0wMSPOwRrjmiLurUDvR1tp3EQynC_LDk")
     
     import PIL.Image
     

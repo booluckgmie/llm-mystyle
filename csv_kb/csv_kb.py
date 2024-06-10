@@ -13,7 +13,7 @@ import pathlib
 import textwrap
 import google.generativeai as genai
 import os
-from constant import API_KEY
+# from constant import API_KEY
 
 sns.set_theme(color_codes=True)
 
@@ -264,7 +264,7 @@ if uploaded_file is not None:
         return Markdown(textwrap.indent(text, '> ', predicate=lambda _: True))
     
     # Ensure genai.configure() is called without any arguments
-    genai.configure(api_key=API_KEY)
+    genai.configure(api_key=input())
     
     import PIL.Image
     

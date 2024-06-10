@@ -192,67 +192,66 @@ if uploaded_file is not None:
         st.pyplot(fig)
         fig.savefig("plot3.png")
 
+    # Define the paths to the saved plots
+    plot_paths = ["plot4.png", "plot7.png", "plot2.png", "plot3.png"]
 
-   # Define the paths to the saved plots
-   plot_paths = ["plot4.png", "plot7.png", "plot2.png", "plot3.png"]
+    # Create a new figure
+    fig, axs = plt.subplots(nrows=2, ncols=2, figsize=(20, 15))
 
-   # Create a new figure
-   fig, axs = plt.subplots(nrows=2, ncols=2, figsize=(20, 15))
+    # Iterate over each plot path and place it in the corresponding subplot
+    for i, plot_path in enumerate(plot_paths):
+        row = i // 2
+        col = i % 2
+        img = plt.imread(plot_path)
+        axs[row, col].imshow(img)
+        axs[row, col].axis('off')
 
-   # Iterate over each plot path and place it in the corresponding subplot
-   for i, plot_path in enumerate(plot_paths):
-       row = i // 2
-       col = i % 2
-       img = plt.imread(plot_path)
-       axs[row, col].imshow(img)
-       axs[row, col].axis('off')
+    # Adjust spacing between subplots
+    plt.tight_layout()
 
-   # Adjust spacing between subplots
-   plt.tight_layout()
+    # Save the merged plot
+    fig.savefig("merged_plots.png")
 
-   # Save the merged plot
-   fig.savefig("merged_plots.png")
+    # Streamed response emulator
+    def to_markdown(text):
+        text = text.replace('•', '  *')
+        return text
 
-   # Streamed response emulator
-   def to_markdown(text):
-       text = text.replace('•', '  *')
-       return text
+    genai.configure()
 
-   genai.configure()
+    img = PIL.Image.open("merged_plots.png")
+    model = genai.GenerativeModel('gemini-pro-vision')
+    response = model.generate_content(img)
 
-   img = PIL.Image.open("merged_plots.png")
-   model = genai.GenerativeModel('gemini-pro-vision')
-   response = model.generate_content(img)
+    st.title("Chat with your Data")
 
-   st.title("Chat with your Data")
+    # Initialize chat history
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
 
-   # Initialize chat history
-   if "messages" not in st.session_state:
-       st.session_state.messages = []
+    # Display chat messages from history on app rerun
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
 
-   # Display chat messages from history on app rerun
-   for message in st.session_state.messages:
-       with st.chat_message(message["role"]):
-           st.markdown(message["content"])
+    # Accept user input
+    if prompt := st.chat_input("Ask Your Data"):
+        # Add user message to chat history
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        # Display user message in chat message container
+        with st.chat_message("user"):
+            st.markdown(prompt)
 
-   # Accept user input
-   if prompt := st.chat_input("Ask Your Data"):
-       # Add user message to chat history
-       st.session_state.messages.append({"role": "user", "content": prompt})
-       # Display user message in chat message container
-       with st.chat_message("user"):
-           st.markdown(prompt)
+        # Generate Google Gemini response based on user's question
+        img = PIL.Image.open("merged_plots.png")
+        model = genai.GenerativeModel('gemini-pro-vision')
+        response = model.generate_content([prompt, img], stream=True)
+        response.resolve()
 
-       # Generate Google Gemini response based on user's question
-       img = PIL.Image.open("merged_plots.png")
-       model = genai.GenerativeModel('gemini-pro-vision')
-       response = model.generate_content([prompt, img], stream=True)
-       response.resolve()
+        # Format and display the response
+        response_text = response.text
+        response_markdown = to_markdown(response_text)
+        st.write(response_markdown)
 
-       # Format and display the response
-       response_text = response.text
-       response_markdown = to_markdown(response_text)
-       st.write(response_markdown)
-
-       # Add assistant response to chat history
-       st.session_state.messages.append({"role": "assistant", "content": response_text})
+        # Add assistant response to chat history
+        st.session_state.messages.append({"role": "assistant", "content": response_text})

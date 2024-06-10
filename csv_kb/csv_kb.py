@@ -12,10 +12,8 @@ import os
 import pathlib
 import textwrap
 import google.generativeai as genai
-from IPython.display import display
-from IPython.display import Markdown
-import time
 
+api_key = os.environ.get("API_KEY")
 
 sns.set_theme(color_codes=True)
 
@@ -247,7 +245,7 @@ if uploaded_file is not None:
         text = text.replace('•', '  *')
         return Markdown(textwrap.indent(text, '> ', predicate=lambda _: True))
 
-    genai.configure(API_KEY)
+    genai.configure(api_key)
 
     import PIL.Image
 

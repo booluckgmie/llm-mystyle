@@ -13,8 +13,8 @@ import pathlib
 import textwrap
 import google.generativeai as genai
 import os
-from IPython.display import display
-from IPython.display import Markdown
+# from IPython.display import display
+# from IPython.display import Markdown
 
 
 # api_key = os.environ.get("API_KEY")

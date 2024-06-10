@@ -228,21 +228,23 @@ if uploaded_file is not None:
 
 
     # Define the paths to the saved plots
-    import os
-    import matplotlib.pyplot as plt
-    
-    # Assume plot_paths is a list of file paths to the plots
     plot_paths = ["plot1.png", "plot2.png", "plot3.png", "plot4.png"]
-    
+
+    # Creating a 2x2 grid of subplots
     fig, axs = plt.subplots(2, 2, figsize=(10, 10))
     
     for i, plot_path in enumerate(plot_paths):
         row = i // 2
         col = i % 2
         if os.path.isfile(plot_path):
-            img = plt.imread(plot_path)
-            axs[row, col].imshow(img)
-            axs[row, col].axis('off')
+            try:
+                img = plt.imread(plot_path)
+                axs[row, col].imshow(img)
+                axs[row, col].axis('off')
+            except Exception as e:
+                print(f"Error reading {plot_path}: {e}")
+                axs[row, col].text(0.5, 0.5, 'Error loading image', ha='center', va='center')
+                axs[row, col].axis('off')
         else:
             print(f"File not found: {plot_path}")
             axs[row, col].text(0.5, 0.5, 'File not found', ha='center', va='center')

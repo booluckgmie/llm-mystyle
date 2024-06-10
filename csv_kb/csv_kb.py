@@ -241,12 +241,16 @@ if uploaded_file is not None:
     fig.savefig("merged_plots.png")
 
     # Streamed response emulator
-
+    import time
+    import textwrap
+    from markdown import Markdown  # Assuming you have imported Markdown from a suitable library
+    
     def to_markdown(text):
         text = text.replace('•', '  *')
         return Markdown(textwrap.indent(text, '> ', predicate=lambda _: True))
     
-    genai.configure(api_key)
+    # Ensure genai.configure() is called without any arguments
+    genai.configure()
     
     import PIL.Image
     
@@ -260,7 +264,6 @@ if uploaded_file is not None:
         for word in response.split():
             yield word + " "
             time.sleep(0.05)
-
 
 
     st.title("Chat with your Data")

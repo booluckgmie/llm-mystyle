@@ -4,3 +4,4 @@ langchain==0.0.263
 sentence-transformers==2.2.2
 pysqlite3-binary
 seaborn
+google-generativeai

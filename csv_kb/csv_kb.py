@@ -228,24 +228,29 @@ if uploaded_file is not None:
 
 
     # Define the paths to the saved plots
-    plot_paths = ["plot4.png", "plot7.png", "plot2.png", "plot3.png"]
-
-    # Create a new figure
-    fig, axs = plt.subplots(nrows=2, ncols=2, figsize=(20, 15))
-
-    # Iterate over each plot path and place it in the corresponding subplot
+    import os
+    import matplotlib.pyplot as plt
+    
+    # Assume plot_paths is a list of file paths to the plots
+    plot_paths = ["plot1.png", "plot2.png", "plot3.png", "plot4.png"]
+    
+    fig, axs = plt.subplots(2, 2, figsize=(10, 10))
+    
     for i, plot_path in enumerate(plot_paths):
         row = i // 2
         col = i % 2
-        img = plt.imread(plot_path)
-        axs[row, col].imshow(img)
-        axs[row, col].axis('off')
-
-    # Adjust spacing between subplots
+        if os.path.isfile(plot_path):
+            img = plt.imread(plot_path)
+            axs[row, col].imshow(img)
+            axs[row, col].axis('off')
+        else:
+            print(f"File not found: {plot_path}")
+            axs[row, col].text(0.5, 0.5, 'File not found', ha='center', va='center')
+            axs[row, col].axis('off')
+    
     plt.tight_layout()
+    plt.show()
 
-    # Save the merged plot
-    fig.savefig("merged_plots.png")
 
     # Streamed response emulator
     import time

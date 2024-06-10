@@ -109,23 +109,26 @@ if uploaded_file is not None:
         st.write("Columns for Analysis and Target Variable DataFrame:")
         st.dataframe(df)
 
-        # Drop columns with null values more than 25%
-        null_percentage = df.isnull().sum() / len(df)
-        columns_to_drop = null_percentage[null_percentage > 0.25].index
-        df.drop(columns=columns_to_drop, inplace=True)
-
-        # Fill missing values below 25% with median
-        for col in df.columns:
-            if df[col].isnull().sum() > 0:  # Check if there are missing values
-                if null_percentage[col] <= 0.25:
-                    if df[col].dtype in ['float64', 'int64']:  # Check if missing values are below 25%
-                        median_value = df[col].median()  # Calculate median for the column
-                        df[col].fillna(median_value, inplace=True)
-
-        # Convert object datatype columns to lowercase
-        for col in df.columns:
-            if df[col].dtype == 'object':  # Check if datatype is object
-                df[col] = df[col].str.lower()  # Convert values to lowercase
+        try:
+            # Drop columns with null values more than 25%
+            null_percentage = df.isnull().sum() / len(df)
+            columns_to_drop = null_percentage[null_percentage > 0.25].index
+            df.drop(columns=columns_to_drop, inplace=True)
+        
+            # Fill missing values below 25% with median
+            for col in df.columns:
+                if df[col].isnull().sum() > 0:
+                    if null_percentage[col] <= 0.25:
+                        if df[col].dtype in ['float64', 'int64']:
+                            median_value = df[col].median()
+                            df[col].fillna(median_value, inplace=True)
+        
+            # Convert object datatype columns to lowercase
+            for col in df.columns:
+                if df[col].dtype == 'object':
+                    df[col] = df[col].str.lower()
+        except Exception as e:
+            print(f"Error during data cleaning and preprocessing: {e}")
 
         st.write("Cleaned Dataset")
         st.dataframe(df)
@@ -149,7 +152,9 @@ if uploaded_file is not None:
             top_categories = df[var].value_counts().nlargest(10).index
             filtered_df = df[df[var].notnull() & df[var].isin(top_categories)]  # Exclude rows with NaN values in the variable
             sns.countplot(x=var, hue=target_variable, data=filtered_df, ax=axs[i])
-            axs[i].set_xticklabels(axs[i].get_xticklabels(), rotation=90)
+            tick_labels = [item.get_text() for item in axs[i].get_xticklabels()]
+            axs[i].set_xticks(range(len(tick_labels)))
+            axs[i].set_xticklabels(tick_labels, rotation=90)
 
         # Remove any remaining blank subplots
         for i in range(num_cols, len(axs)):
@@ -194,6 +199,26 @@ if uploaded_file is not None:
 
     # Define the paths to the saved plots
     plot_paths = ["plot4.png", "plot7.png", "plot2.png", "plot3.png"]
+    existing_plots = []
+    for plot_path in plot_paths:
+        if os.path.exists(plot_path):
+            existing_plots.append(plot_path)
+        else:
+            print(f"File '{plot_path}' not found.")
+    
+    if existing_plots:
+        fig, axs = plt.subplots(nrows=2, ncols=2, figsize=(20, 15))
+        for i, plot_path in enumerate(existing_plots):
+            try:
+                row = i // 2
+                col = i % 2
+                img = plt.imread(plot_path)
+                axs[row, col].imshow(img)
+                axs[row, col].axis('off')
+            except Exception as e:
+                print(f"Error while reading '{plot_path}': {e}")
+    else:
+        print("No plot files found.")
 
     # Create a new figure
     fig, axs = plt.subplots(nrows=2, ncols=2, figsize=(20, 15))

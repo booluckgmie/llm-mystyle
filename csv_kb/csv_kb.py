@@ -29,7 +29,12 @@ def calculate_num_rows(num_cols):
     if num_cols == 0:
         return 1  # At least one row needed for plotting
     return (num_cols + 2) // 3  # To make sure there are enough rows for the subplots
-    
+
+# Function to convert text to Markdown with indentation
+def to_markdown(text):
+    text = text.replace('•', '  *')
+    return st.Markdown(textwrap.indent(text, '> ', predicate=lambda _: True))  # Use st.Markdown to create Markdown content
+
 # Check if the file is uploaded
 if uploaded_file is not None:
     # Read the CSV file into a Pandas DataFrame

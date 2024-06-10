@@ -16,7 +16,7 @@ import os
 
 api_key = os.environ.get("API_KEY")
 
-st.title("EDA with Google Gemini")
+st.title("Make your data talk (they never lied) with Google Gemini")
     
 # Upload the CSV file
 uploaded_file = st.file_uploader("Upload CSV file:")

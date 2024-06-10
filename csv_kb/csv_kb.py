@@ -1,24 +1,15 @@
 import streamlit as st
-import random
-import time
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-import numpy as np
-from scipy import stats
-import warnings
-sns.set_theme(color_codes=True)
-import os
-import pathlib
-import textwrap
 import google.generativeai as genai
-import os
+import PIL.Image
 
-api_key = os.environ.get("API_KEY")
+sns.set_theme(color_codes=True)
 
 st.title("Make your data talk")
-st.write("- they never lied, with Google Gemini")
-    
+st.write("- they never lied, with Google Generative AI")
+
 # Upload the CSV file
 uploaded_file = st.file_uploader("Upload CSV file:")
 
@@ -27,12 +18,9 @@ if uploaded_file is not None:
     # Read the CSV file into a Pandas DataFrame
     df = pd.read_csv(uploaded_file, low_memory=False)
 
-        
     # Show the original DataFrame
     st.write("Original DataFrame:")
     st.dataframe(df)
-
-
 
     st.write("**Countplot Barchart**")
 
@@ -66,8 +54,6 @@ if uploaded_file is not None:
     st.pyplot(fig)
     fig.savefig("plot4.png")
 
-        
-
     st.write("**Histoplot**")
     # Get the names of all columns with data type 'int' or 'float'
     num_vars = [col for col in df.select_dtypes(include=['int', 'float']).columns]
@@ -96,11 +82,9 @@ if uploaded_file is not None:
     st.pyplot(fig)
     fig.savefig("plot7.png")
 
-    
-        
     # Select target variable
     target_variable = st.selectbox("Select target variable:", df.columns)
-        
+
     # Select columns for analysis
     columns_for_analysis = st.multiselect("Select columns for analysis:", [col for col in df.columns if col != target_variable])
 
@@ -114,12 +98,12 @@ if uploaded_file is not None:
         target_variable_df = df[[target_variable]]
         st.write("Target Variable DataFrame:")
         st.dataframe(target_variable_df)
-            
+
         # Display columns for analysis in a dataframe
         columns_for_analysis_df = df[columns_for_analysis]
         st.write("Columns for Analysis DataFrame:")
         st.dataframe(columns_for_analysis_df)
-            
+
         # Concatenate target variable and columns for analysis into a single DataFrame
         df = pd.concat([target_variable_data, columns_for_analysis_data], axis=1)
         st.write("Columns for Analysis and Target Variable DataFrame:")
@@ -137,7 +121,7 @@ if uploaded_file is not None:
                     if df[col].dtype in ['float64', 'int64']:  # Check if missing values are below 25%
                         median_value = df[col].median()  # Calculate median for the column
                         df[col].fillna(median_value, inplace=True)
-            
+
         # Convert object datatype columns to lowercase
         for col in df.columns:
             if df[col].dtype == 'object':  # Check if datatype is object
@@ -146,11 +130,7 @@ if uploaded_file is not None:
         st.write("Cleaned Dataset")
         st.dataframe(df)
 
-
         st.write("**Multiclass Barplot**")
-        # Get the names of all columns with data type 'object' (categorical columns)
-        cat_cols = df.columns.tolist()
-
         # Get the names of all columns with data type 'object' (categorical variables)
         cat_vars = df.select_dtypes(include=['object']).columns.tolist()
 
@@ -182,123 +162,96 @@ if uploaded_file is not None:
         st.pyplot(fig)
         fig.savefig("plot2.png")
 
-        
-
-
         st.write("**Multiclass Histplot**")
-        # Get the names of all columns with data type 'object' (categorical columns)
-        cat_cols = df.columns.tolist()
-
         # Get the names of all columns with data type 'int'
         int_vars = df.select_dtypes(include=['int', 'float']).columns.tolist()
         int_vars = [col for col in int_vars if col != target_variable]
 
         # Create a figure with subplots
-        num_cols = len(int_vars)
-        num_rows = (num_cols + 2) // 3  # To make sure there are enough rows for the subplots
-        fig, axs = plt.subplots(nrows=num_rows, ncols=3, figsize=(15, 5*num_rows))
-        axs = axs.flatten()
+       num_cols = len(int_vars)
+       num_rows = (num_cols + 2) // 3  # To make sure there are enough rows for the subplots
+       fig, axs = plt.subplots(nrows=num_rows, ncols=3, figsize=(15, 5*num_rows))
+       axs = axs.flatten()
 
-        # Create a histogram for each integer variable with hue='Attrition'
-        for i, var in enumerate(int_vars):
-            top_categories = df[var].value_counts().nlargest(10).index
-            filtered_df = df[df[var].notnull() & df[var].isin(top_categories)]
-            sns.histplot(data=df, x=var, hue=target_variable, kde=True, ax=axs[i])
-            axs[i].set_title(var)
+       # Create a histogram for each integer variable with hue='Attrition'
+       for i, var in enumerate(int_vars):
+           top_categories = df[var].value_counts().nlargest(10).index
+           filtered_df = df[df[var].notnull() & df[var].isin(top_categories)]
+           sns.histplot(data=df, x=var, hue=target_variable, kde=True, ax=axs[i])
+           axs[i].set_title(var)
 
-        # Remove any extra empty subplots if needed
-        if num_cols < len(axs):
-            for i in range(num_cols, len(axs)):
-                fig.delaxes(axs[i])
+       # Remove any extra empty subplots if needed
+       if num_cols < len(axs):
+           for i in range(num_cols, len(axs)):
+               fig.delaxes(axs[i])
 
-        # Adjust spacing between subplots
-        fig.tight_layout()
+       # Adjust spacing between subplots
+       fig.tight_layout()
 
-        # Show plot
-        st.pyplot(fig)
-        fig.savefig("plot3.png")
+       # Show plot
+       st.pyplot(fig)
+       fig.savefig("plot3.png")
 
+   # Define the paths to the saved plots
+   plot_paths = ["plot4.png", "plot7.png", "plot2.png", "plot3.png"]
 
-    # Define the paths to the saved plots
-    plot_paths = ["plot4.png", "plot7.png", "plot2.png", "plot3.png"]
+   # Create a new figure
+   fig, axs = plt.subplots(nrows=2, ncols=2, figsize=(20, 15))
 
-    # Create a new figure
-    fig, axs = plt.subplots(nrows=2, ncols=2, figsize=(20, 15))
+   # Iterate over each plot path and place it in the corresponding subplot
+   for i, plot_path in enumerate(plot_paths):
+       row = i // 2
+       col = i % 2
+       img = plt.imread(plot_path)
+       axs[row, col].imshow(img)
+       axs[row, col].axis('off')
 
-    # Iterate over each plot path and place it in the corresponding subplot
-    for i, plot_path in enumerate(plot_paths):
-        row = i // 2
-        col = i % 2
-        img = plt.imread(plot_path)
-        axs[row, col].imshow(img)
-        axs[row, col].axis('off')
+   # Adjust spacing between subplots
+   plt.tight_layout()
 
-    # Adjust spacing between subplots
-    plt.tight_layout()
+   # Save the merged plot
+   fig.savefig("merged_plots.png")
 
-    # Save the merged plot
-    fig.savefig("merged_plots.png")
+   # Streamed response emulator
+   def to_markdown(text):
+       text = text.replace('•', '  *')
+       return text
 
-    # Streamed response emulator
+   genai.configure()
 
-    def to_markdown(text):
-        text = text.replace('•', '  *')
-        return Markdown(textwrap.indent(text, '> ', predicate=lambda _: True))
+   img = PIL.Image.open("merged_plots.png")
+   model = genai.GenerativeModel('gemini-pro-vision')
+   response = model.generate_content(img)
 
-    genai.configure(api_key)
+   st.title("Chat with your Data")
 
-    import PIL.Image
+   # Initialize chat history
+   if "messages" not in st.session_state:
+       st.session_state.messages = []
 
-    img = PIL.Image.open("merged_plots.png")
-    model = genai.GenerativeModel('gemini-pro-vision')
-    response = model.generate_content(img)
+   # Display chat messages from history on app rerun
+   for message in st.session_state.messages:
+       with st.chat_message(message["role"]):
+           st.markdown(message["content"])
 
-    def response_generator():
-        response = response.text
+   # Accept user input
+   if prompt := st.chat_input("Ask Your Data"):
+       # Add user message to chat history
+       st.session_state.messages.append({"role": "user", "content": prompt})
+       # Display user message in chat message container
+       with st.chat_message("user"):
+           st.markdown(prompt)
 
-            
-        for word in response.split():
-            yield word + " "
-            time.sleep(0.05)
+       # Generate Google Gemini response based on user's question
+       img = PIL.Image.open("merged_plots.png")
+       model = genai.GenerativeModel('gemini-pro-vision')
+       response = model.generate_content([prompt, img], stream=True)
+       response.resolve()
 
+       # Format and display the response
+       response_text = response.text
+       response_markdown = to_markdown(response_text)
+       st.write(response_markdown)
 
-    st.title("Chat with your Data")
-
-    # Initialize chat history
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
-
-    # Display chat messages from history on app rerun
-    for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
-
-    # Accept user input
-    if prompt := st.chat_input("Ask Your Data"):
-        # Add user message to chat history
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        # Display user message in chat message container
-        with st.chat_message("user"):
-            st.markdown(prompt)
-
-        # Generate Google Gemini response based on user's question
-        img = PIL.Image.open("merged_plots.png")
-        model = genai.GenerativeModel('gemini-pro-vision')
-        response = model.generate_content([prompt, img], stream=True)
-        response.resolve()
-
-        # Format and display the response
-        response_text = response.text
-        response_markdown = to_markdown(response_text)
-        st.write(response.text)
-
-        # Add assistant response to chat history
-        st.session_state.messages.append({"role": "assistant", "content": response_text})
-
-
-
-
-
-
-            
-
+       # Add assistant response to chat history
+       st.session_state.messages.append({"role": "assistant", "content": response_text})

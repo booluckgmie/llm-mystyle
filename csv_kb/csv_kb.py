@@ -157,127 +157,128 @@ if uploaded_file is not None:
             axs[i].set_xticks(range(len(tick_labels)))
             axs[i].set_xticklabels(tick_labels, rotation=90)
 
-        # Remove any remaining blank subplots
-        for i in range(num_cols, len(axs)):
-            fig.delaxes(axs[i])
-
-        # Adjust spacing between subplots
-        fig.tight_layout()
-
-        # Show plot
-        st.pyplot(fig)
-        fig.savefig("plot2.png")
-
-        st.write("**Multiclass Histplot**")
-        # Get the names of all columns with data type 'int'
-        int_vars = df.select_dtypes(include=['int', 'float']).columns.tolist()
-        int_vars = [col for col in int_vars if col != target_variable]
-
-        # Create a figure with subplots
-        num_cols = len(int_vars)
-        num_rows = (num_cols + 2) // 3  # To make sure there are enough rows for the subplots
-        fig, axs = plt.subplots(nrows=num_rows, ncols=3, figsize=(15, 5*num_rows))
-        axs = axs.flatten()
-        
-        # Create a histogram for each integer variable with hue='Attrition'
-        for i, var in enumerate(int_vars):
-            top_categories = df[var].value_counts().nlargest(10).index
-            filtered_df = df[df[var].notnull() & df[var].isin(top_categories)]
-            sns.histplot(data=df, x=var, hue=target_variable, kde=True, ax=axs[i])
-            axs[i].set_title(var)
-        
-        # Remove any extra empty subplots if needed
-        if num_cols < len(axs):
-            for i in range(num_cols, len(axs)):
-                fig.delaxes(axs[i])
-        
-        # Adjust spacing between subplots
-        fig.tight_layout()
-        
-        # Show plot
-        st.pyplot(fig)
-        fig.savefig("plot3.png")
-
-    # Define the paths to the saved plots
-    plot_paths = ["plot4.png", "plot7.png", "plot2.png", "plot3.png"]
-    existing_plots = []
-    for plot_path in plot_paths:
-        if os.path.exists(plot_path):
-            existing_plots.append(plot_path)
-        else:
-            print(f"File '{plot_path}' not found.")
-    
-    if existing_plots:
-        fig, axs = plt.subplots(nrows=2, ncols=2, figsize=(20, 15))
-        for i, plot_path in enumerate(existing_plots):
-            try:
-                row = i // 2
-                col = i % 2
-                img = plt.imread(plot_path)
-                axs[row, col].imshow(img)
-                axs[row, col].axis('off')
-            except Exception as e:
-                print(f"Error while reading '{plot_path}': {e}")
-    else:
-        print("No plot files found.")
-
-    # Create a new figure
-    fig, axs = plt.subplots(nrows=2, ncols=2, figsize=(20, 15))
-
-    # Iterate over each plot path and place it in the corresponding subplot
-    for i, plot_path in enumerate(plot_paths):
-        row = i // 2
-        col = i % 2
-        img = plt.imread(plot_path)
-        axs[row, col].imshow(img)
-        axs[row, col].axis('off')
+    # Remove any remaining blank subplots
+    for i in range(num_cols, len(axs)):
+        fig.delaxes(axs[i])
 
     # Adjust spacing between subplots
-    plt.tight_layout()
+    fig.tight_layout()
 
-    # Save the merged plot
-    fig.savefig("merged_plots.png")
+    # Show plot
+    st.pyplot(fig)
+    fig.savefig("plot2.png")
 
-    # Streamed response emulator
-    def to_markdown(text):
-        text = text.replace('•', '  *')
-        return text
+    st.write("**Multiclass Histplot**")
+    # Get the names of all columns with data type 'int'
+    int_vars = df.select_dtypes(include=['int', 'float']).columns.tolist()
+    int_vars = [col for col in int_vars if col != target_variable]
 
-    genai.configure()
+    # Create a figure with subplots
+    num_cols = len(int_vars)
+    num_rows = (num_cols + 2) // 3  # To make sure there are enough rows for the subplots
+    fig, axs = plt.subplots(nrows=num_rows, ncols=3, figsize=(15, 5*num_rows))
+    axs = axs.flatten()
+    
+    # Create a histogram for each integer variable with hue='Attrition'
+    for i, var in enumerate(int_vars):
+        top_categories = df[var].value_counts().nlargest(10).index
+        filtered_df = df[df[var].notnull() & df[var].isin(top_categories)]
+        sns.histplot(data=df, x=var, hue=target_variable, kde=True, ax=axs[i])
+        axs[i].set_title(var)
+    
+    # Remove any extra empty subplots if needed
+    if num_cols < len(axs):
+        for i in range(num_cols, len(axs)):
+            fig.delaxes(axs[i])
+    
+    # Adjust spacing between subplots
+    fig.tight_layout()
+    
+    # Show plot
+    st.pyplot(fig)
+    fig.savefig("plot3.png")
 
+# Define the paths to the saved plots
+plot_paths = ["plot4.png", "plot7.png", "plot2.png", "plot3.png"]
+existing_plots = []
+for plot_path in plot_paths:
+    if os.path.exists(plot_path):
+        existing_plots.append(plot_path)
+    else:
+        print(f"File '{plot_path}' not found.")
+
+if existing_plots:
+    fig, axs = plt.subplots(nrows=2, ncols=2, figsize=(20, 15))
+    for i, plot_path in enumerate(existing_plots):
+        try:
+            row = i // 2
+            col = i % 2
+            img = plt.imread(plot_path)
+            axs[row, col].imshow(img)
+            axs[row, col].axis('off')
+        except Exception as e:
+            print(f"Error while reading '{plot_path}': {e}")
+else:
+    print("No plot files found.")
+
+# Create a new figure
+fig, axs = plt.subplots(nrows=2, ncols=2, figsize=(20, 15))
+
+# Iterate over each plot path and place it in the corresponding subplot
+for i, plot_path in enumerate(plot_paths):
+    row = i // 2
+    col = i % 2
+    img = plt.imread(plot_path)
+    axs[row, col].imshow(img)
+    axs[row, col].axis('off')
+
+# Adjust spacing between subplots
+plt.tight_layout()
+
+# Save the merged plot
+fig.savefig("merged_plots.png")
+
+# Streamed response emulator
+def to_markdown(text):
+    text = text.replace('•', '  *')
+    return text
+
+genai.configure()
+
+img = PIL.Image.open("merged_plots.png")
+model = genai.GenerativeModel('gemini-pro-vision')
+response = model.generate_content(img)
+
+st.title("Chat with your Data")
+
+# Initialize chat history
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+# Display chat messages from history on app rerun
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+# Accept user input
+if prompt := st.chat_input("Ask Your Data"):
+    # Add user message to chat history
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    # Display user message in chat message container
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
+    # Generate Google Gemini response based on user's question
     img = PIL.Image.open("merged_plots.png")
     model = genai.GenerativeModel('gemini-pro-vision')
-    response = model.generate_content(img)
+    response = model.generate_content([prompt, img], stream=True)
+    response.resolve()
 
-    st.title("Chat with your Data")
+    # Format and display the response
+    response_text = response.text
+    response_markdown = to_markdown(response_text)
+    st.write(response_markdown)
 
-    # Initialize chat history
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
+    # Add assistant response to chat history
+    st.session_state.messages.append({"role": "assistant", "content": response_text})
 
-    # Display chat messages from history on app rerun
-    for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
-
-    # Accept user input
-    if prompt := st.chat_input("Ask Your Data"):
-        # Add user message to chat history
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        # Display user message in chat message container
-        with st.chat_message("user"):
-            st.markdown(prompt)
-
-        # Generate Google Gemini response based on user's question
-        img = PIL.Image.open("merged_plots.png")
-        model = genai.GenerativeModel('gemini-pro-vision')
-        response = model.generate_content([prompt, img], stream=True)
-        response.resolve()
-
-        # Format and display the response
-        response_text = response.text
-        response_markdown = to_markdown(response_text)
-        st.write(response_markdown)
-
-        # Add assistant response to chat history
-        st.session_state.messages.append({"role": "assistant", "content": response_text})

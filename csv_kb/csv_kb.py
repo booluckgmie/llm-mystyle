@@ -8,17 +8,12 @@ import numpy as np
 from scipy import stats
 import warnings
 sns.set_theme(color_codes=True)
-import os
+
 import pathlib
 import textwrap
 import google.generativeai as genai
 import os
 from constant import API_KEY
-# from IPython.display import display
-# from IPython.display import Markdown
-
-
-# api_key = os.environ.get("API_KEY")
 
 sns.set_theme(color_codes=True)
 

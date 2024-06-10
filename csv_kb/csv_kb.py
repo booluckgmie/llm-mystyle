@@ -245,22 +245,22 @@ if uploaded_file is not None:
     def to_markdown(text):
         text = text.replace('•', '  *')
         return Markdown(textwrap.indent(text, '> ', predicate=lambda _: True))
-
+    
     genai.configure(api_key)
-
+    
     import PIL.Image
-
+    
     img = PIL.Image.open("merged_plots.png")
     model = genai.GenerativeModel('gemini-pro-vision')
     response = model.generate_content(img)
-
+    
     def response_generator():
         response = response.text
-
-            
+                
         for word in response.split():
             yield word + " "
             time.sleep(0.05)
+
 
 
     st.title("Chat with your Data")

@@ -8,7 +8,7 @@ import PIL.Image
 sns.set_theme(color_codes=True)
 
 st.title("Make your data talk")
-st.write("- they never lied, with Google Generative AI")
+st.write("they never lied, with Google Generative AI")
 
 # Upload the CSV file
 uploaded_file = st.file_uploader("Upload CSV file:")

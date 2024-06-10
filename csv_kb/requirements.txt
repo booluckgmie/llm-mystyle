@@ -5,3 +5,4 @@ sentence-transformers==2.2.2
 pysqlite3-binary
 seaborn
 google-generativeai
+markdown

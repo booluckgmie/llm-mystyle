@@ -86,6 +86,42 @@ if uploaded_file is not None:
         st.pyplot(fig)
         fig.savefig("plot7.png")
 
+    # ── Overall Data Summary Insight ────────────────────────────────────────
+    with st.expander("📊 Overall Data Insight", expanded=True):
+        st.write("**Dataset Overview**")
+        col1, col2, col3, col4 = st.columns(4)
+        col1.metric("Rows", df.shape[0])
+        col2.metric("Columns", df.shape[1])
+        col3.metric("Numeric cols", len(df.select_dtypes(include=['int', 'float']).columns))
+        col4.metric("Categorical cols", len(df.select_dtypes(include='object').columns))
+
+        null_total = df.isnull().sum().sum()
+        null_pct = round(null_total / df.size * 100, 2)
+        st.write(f"**Missing values:** {null_total} cells ({null_pct}% of dataset)")
+
+        null_by_col = df.isnull().sum()
+        null_by_col = null_by_col[null_by_col > 0]
+        if len(null_by_col) > 0:
+            st.write("Columns with missing values:")
+            st.dataframe(
+                null_by_col.rename("Missing Count")
+                .to_frame()
+                .assign(Percentage=lambda x: (x["Missing Count"] / len(df) * 100).round(2))
+            )
+
+        st.write("**Numeric Summary**")
+        st.dataframe(df.describe().T.round(2))
+
+        st.write("**Categorical Value Counts**")
+        cat_cols_summary = [col for col in df.select_dtypes(include='object').columns
+                            if df[col].nunique() <= 20]
+        for col in cat_cols_summary:
+            st.write(f"*{col}*")
+            vc = df[col].value_counts().reset_index()
+            vc.columns = [col, "Count"]
+            vc["Percentage"] = (vc["Count"] / len(df) * 100).round(2)
+            st.dataframe(vc, use_container_width=True)
+
     # ── Target variable & column selection ─────────────────────────────────
     target_variable = st.selectbox("Select target variable:", df.columns)
     columns_for_analysis = st.multiselect(
@@ -172,7 +208,54 @@ if uploaded_file is not None:
             st.pyplot(fig)
             fig.savefig("plot3.png")
 
-    # ── Merged plot grid ────────────────────────────────────────────────────
+        # ── Selected Analysis Insight ───────────────────────────────────────
+        with st.expander("🔍 Selected Analysis Insight", expanded=True):
+            st.write(f"**Target variable:** `{target_variable}`")
+            st.write(f"**Features selected:** {', '.join(columns_for_analysis) if columns_for_analysis else 'None'}")
+
+            # Target distribution
+            st.write("**Target variable distribution**")
+            target_vc = df[target_variable].value_counts().reset_index()
+            target_vc.columns = [target_variable, "Count"]
+            target_vc["Percentage"] = (target_vc["Count"] / len(df) * 100).round(2)
+            st.dataframe(target_vc, use_container_width=True)
+
+            # Numeric stats grouped by target
+            num_cols_analysis = df.select_dtypes(include=['int', 'float']).columns.tolist()
+            if len(num_cols_analysis) > 0:
+                st.write("**Numeric feature stats grouped by target**")
+                grouped_stats = df.groupby(target_variable)[num_cols_analysis].mean().T.round(2)
+                grouped_stats.index.name = "Feature"
+                st.dataframe(grouped_stats, use_container_width=True)
+
+            # Correlation with numeric target (if applicable)
+            if df[target_variable].dtype in ['int64', 'float64']:
+                st.write("**Correlation with target variable**")
+                corr = df[num_cols_analysis].corrwith(df[target_variable]).round(3)
+                corr_df = corr.rename("Correlation").to_frame().sort_values("Correlation", key=abs, ascending=False)
+                st.dataframe(corr_df, use_container_width=True)
+            else:
+                # For categorical target: show mode per group for cat features
+                cat_cols_analysis = df.select_dtypes(include='object').columns.tolist()
+                cat_cols_analysis = [c for c in cat_cols_analysis if c != target_variable]
+                if len(cat_cols_analysis) > 0:
+                    st.write("**Categorical feature distribution by target**")
+                    for col in cat_cols_analysis:
+                        ct = pd.crosstab(df[col], df[target_variable], normalize='index').round(3) * 100
+                        st.write(f"*{col}* (% per target class)")
+                        st.dataframe(ct, use_container_width=True)
+
+            # Dropped & filled columns summary
+            dropped = list(columns_to_drop)
+            filled = [col for col in df.columns
+                      if col not in dropped and df[col].dtype in ['float64', 'int64']
+                      and null_percentage.get(col, 0) > 0]
+            if dropped:
+                st.warning(f"Dropped columns (>25% missing): {', '.join(dropped)}")
+            if filled:
+                st.info(f"Null-filled with median (<25% missing): {', '.join(filled)}")
+
+
     plot_paths = ["plot1.png", "plot2.png", "plot3.png", "plot4.png"]
     fig, axs = plt.subplots(2, 2, figsize=(10, 10))
     for i, plot_path in enumerate(plot_paths):
@@ -192,27 +275,23 @@ if uploaded_file is not None:
     plt.tight_layout()
     plt.savefig("merged_plots.png")
 
-    # ── Gemini vision setup ─────────────────────────────────────────────────
-    import textwrap
-    from markdown import Markdown
-
-    def to_markdown(text):
-        text = text.replace('•', '  *')
-        return Markdown(textwrap.indent(text, '> ', predicate=lambda _: True))
-
-    genai.configure(api_key=input())
-
+    # ── Gemini API key (sidebar) ────────────────────────────────────────────
     import PIL.Image
 
-    img = PIL.Image.open("merged_plots.png")
-    model = genai.GenerativeModel('gemini-pro-vision')
-    response = model.generate_content(img)
+    with st.sidebar:
+        st.header("🔑 Gemini API Key")
+        gemini_api_key = st.text_input(
+            "Enter your Gemini API key",
+            type="password",
+            placeholder="AIza...",
+            help="Get your key at https://aistudio.google.com/app/apikey"
+        )
 
-    def response_generator():
-        text = response.text
-        for word in text.split():
-            yield word + " "
-            time.sleep(0.05)
+    if not gemini_api_key:
+        st.info("Enter your Gemini API key in the sidebar to enable AI chat.")
+        st.stop()
+
+    genai.configure(api_key=gemini_api_key)
 
     # ── Chat interface ──────────────────────────────────────────────────────
     st.title("Chat with your Data")
@@ -229,13 +308,22 @@ if uploaded_file is not None:
         with st.chat_message("user"):
             st.markdown(prompt)
 
-        img = PIL.Image.open("merged_plots.png")
-        model = genai.GenerativeModel('gemini-pro-vision')
-        response = model.generate_content([prompt, img], stream=True)
-        response.resolve()
+        with st.chat_message("assistant"):
+            with st.spinner("Thinking..."):
+                try:
+                    if os.path.isfile("merged_plots.png"):
+                        img = PIL.Image.open("merged_plots.png")
+                        model = genai.GenerativeModel("gemini-2.0-flash")
+                        response = model.generate_content([prompt, img])
+                    else:
+                        model = genai.GenerativeModel("gemini-2.0-flash")
+                        response = model.generate_content(prompt)
 
-        response_text = response.text
-        to_markdown(response_text)
-        st.write(response.text)
+                    response_text = response.text
+                    st.markdown(response_text)
+                    st.session_state.messages.append({"role": "assistant", "content": response_text})
 
-        st.session_state.messages.append({"role": "assistant", "content": response_text})
+                except Exception as e:
+                    err = f"Gemini error: {e}"
+                    st.error(err)
+                    st.session_state.messages.append({"role": "assistant", "content": err})

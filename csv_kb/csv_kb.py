@@ -156,8 +156,27 @@ if uploaded_file is not None:
 
 
         st.write("**Multiclass Barplot**")
-        # Get the names of all columns with data type 'object' (categorical columns)
-        cat_cols = df.columns.tolist()
+                cat_vars = df.select_dtypes(include=['object']).columns.tolist()
+                if target_variable in cat_vars:
+                    cat_vars.remove(target_variable)
+
+                if len(cat_vars) == 0:
+                    st.info("No categorical columns available for multiclass barplot.")
+                else:
+                    num_cols = len(cat_vars)
+                    num_rows = (num_cols + 2) // 3
+                    fig, axs = plt.subplots(nrows=num_rows, ncols=3, figsize=(15, 5*num_rows))
+                    axs = axs.flatten()
+                    for i, var in enumerate(cat_vars):
+                        top_categories = df[var].value_counts().nlargest(10).index
+                        filtered_df = df[df[var].notnull() & df[var].isin(top_categories)]
+                        sns.countplot(x=var, hue=target_variable, data=filtered_df, ax=axs[i])
+                        axs[i].set_xticklabels(axs[i].get_xticklabels(), rotation=90)
+                    for i in range(num_cols, len(axs)):
+                        fig.delaxes(axs[i])
+                    fig.tight_layout()
+                    st.pyplot(fig)
+                    fig.savefig("plot2.png")
 
         # Get the names of all columns with data type 'object' (categorical variables)
         cat_vars = df.select_dtypes(include=['object']).columns.tolist()
@@ -194,8 +213,24 @@ if uploaded_file is not None:
 
 
         st.write("**Multiclass Histplot**")
-        # Get the names of all columns with data type 'object' (categorical columns)
-        cat_cols = df.columns.tolist()
+                int_vars = df.select_dtypes(include=['int', 'float']).columns.tolist()
+                int_vars = [col for col in int_vars if col != target_variable]
+
+                if len(int_vars) == 0:
+                    st.info("No numeric columns available for multiclass histplot.")
+                else:
+                    num_cols = len(int_vars)
+                    num_rows = (num_cols + 2) // 3
+                    fig, axs = plt.subplots(nrows=num_rows, ncols=3, figsize=(15, 5*num_rows))
+                    axs = axs.flatten()
+                    for i, var in enumerate(int_vars):
+                        sns.histplot(data=df, x=var, hue=target_variable, kde=True, ax=axs[i])
+                        axs[i].set_title(var)
+                    for i in range(num_cols, len(axs)):
+                        fig.delaxes(axs[i])
+                    fig.tight_layout()
+                    st.pyplot(fig)
+                    fig.savefig("plot3.png")
 
         # Get the names of all columns with data type 'int'
         int_vars = df.select_dtypes(include=['int', 'float']).columns.tolist()
